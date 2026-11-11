@@ -1,0 +1,3 @@
+-- Task 3: an index for the course dashboard lookup (README.md, Task 3).
+-- The dashboard runs: SELECT student_id, grade FROM enrollments WHERE course_code = ? ORDER BY grade DESC;
+-- TODO: write one CREATE INDEX statement below this line.
