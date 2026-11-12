@@ -75,19 +75,36 @@ Try your queries at the prompt; `\d enrollments` lists the indexes PostgreSQL al
 1. **SQL201 waitlist (`sql/waitlist.sql`).** Offer a SQL201 place to every student whose SQL101 grade is at least the SQL101 average grade and who is not already enrolled in SQL201.
    - The file supplies the first named step, `sql101_average`, which computes the average.
    - Add a second step, `sql201_students`, that lists who is already in SQL201, then the final `SELECT`.
-   - In the final `SELECT`, compare each grade with the average through a scalar subquery, and leave out the SQL201 students with `NOT IN` or `NOT EXISTS`.
    - Columns `id`, `name`, `sql101_grade`, sorted by `sql101_grade` from highest to lowest, then `id`.
    - The test also checks that the file's statement starts with `WITH`.
+
+   <details><summary>Hint</summary>
+
+   In the final `SELECT`, compare each grade with the average through a scalar subquery, and leave out the SQL201 students with `NOT IN` or `NOT EXISTS`.
+
+   </details>
+
 2. **Top two per course (`sql/top_students.sql`).** For every course, the two best graded students. The file supplies a `WITH` step, `ranked`, that already selects each graded enrollment with its student's name.
-   - Where the TODO comment is, add a `place` column that numbers each course's rows with `ROW_NUMBER() OVER (PARTITION BY course_code ORDER BY grade DESC, student_id)`. Student id breaks ties, so Alan and Barbara, who both have 88 in SQL101, always come out in the same order.
-   - Add the course's average grade on every row with `AVG(grade) OVER (PARTITION BY course_code)`, which keeps each row instead of collapsing the group.
+   - Where the TODO comment is, add a `place` column that numbers each course's rows by grade, highest first. Student id breaks ties, so Alan and Barbara, who both have 88 in SQL101, always come out in the same order.
+   - Add the course's average grade, `course_average`, on every row.
    - Below the step, write the outer query that keeps places 1 and 2.
    - Columns `course_code`, `place`, `name`, `grade`, `course_average`, sorted by `course_code`, then `place`.
-   - With `RANK` or `DENSE_RANK` and no tie-breaker, tied students would share a place and a course could show three rows.
+
+   <details><summary>Hint</summary>
+
+   Number the rows with `ROW_NUMBER() OVER (PARTITION BY course_code ORDER BY grade DESC, student_id)`. Add the average with `AVG(grade) OVER (PARTITION BY course_code)`, which keeps each row instead of collapsing the group. With `RANK` or `DENSE_RANK` and no tie-breaker, tied students would share a place and a course could show three rows.
+
+   </details>
+
 3. **Dashboard index (`sql/report_index.sql`).** The dashboard runs `SELECT student_id, grade FROM enrollments WHERE course_code = ? ORDER BY grade DESC`. The primary key's index leads with `student_id`, so it cannot hand back one course's rows in grade order, and the plan still needs a Sort step.
-   - Write one `CREATE INDEX`, with a name of your choice: a multicolumn B-tree index whose columns match the query, the filtered column first, then the sorted one.
+   - Write one `CREATE INDEX`, with a name of your choice, so the plan reads one course's rows in grade order.
    - The test runs `EXPLAIN` on the dashboard query and checks that the plan reads the rows from your index in grade order, with no separate Sort step. It first turns sequential scans off (`SET enable_seqscan = off`), because on 12 rows PostgreSQL would rightly prefer reading the whole small table. If the test fails, it prints the plan: read which scan it chose.
-   - In your scratch database, `EXPLAIN` the same query before and after creating the index to see the change.
+
+   <details><summary>Hint</summary>
+
+   Use a multicolumn B-tree index whose columns match the query: the filtered column first, then the sorted one. In your scratch database, `EXPLAIN` the same query before and after creating the index to see the change.
+
+   </details>
 
 **Starting over (optional):** the shipped version of every file is in the lab's original repository, in the same folder. Copy your attempt somewhere else first if you want to keep it, then paste the shipped text back into the file.
 
