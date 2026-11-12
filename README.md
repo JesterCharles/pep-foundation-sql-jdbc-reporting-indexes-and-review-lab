@@ -1,6 +1,6 @@
 # Reporting lab: the registrar's term reports
 
-The spring term is under way in the registrar database from the Queries lab. The course coordinator needs a waitlist, a top-students report and a fast course dashboard. You finish three SQL files. The tests run each one against a fresh database on the PostgreSQL server the tests connect to.
+The spring term is under way in the registrar database. The course coordinator needs a waitlist, a top-students report and a fast course dashboard. You finish three SQL files. The tests run each one against a fresh database on the PostgreSQL server the tests connect to.
 
 ```
 OPEN the project -> EDIT a TODO -> RUN the tests -> READ the feedback -> STOP when all pass
@@ -57,7 +57,7 @@ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 
 ## The data
 
-`../fixtures/schema.sql` is the registrar schema from the Queries lab, and `../fixtures/term-data.sql` holds the spring term: 4 courses, 8 students and 12 enrollments, some still ungraded (NULL). Before every test, the tests rebuild the tables from these two files.
+`../fixtures/schema.sql` creates the registrar tables, and `../fixtures/term-data.sql` holds the spring term: 4 courses, 8 students and 12 enrollments, some still ungraded (NULL). Before every test, the tests rebuild the tables from these two files.
 
 **Try it in psql (optional, not tested).** From `starter`:
 
@@ -106,7 +106,7 @@ Try your queries at the prompt; `\d enrollments` lists the indexes PostgreSQL al
 
    </details>
 
-**Starting over (optional):** the shipped version of every file is in the lab's original repository, in the same folder. Copy your attempt somewhere else first if you want to keep it, then paste the shipped text back into the file.
+**Starting over (optional):** before you change a file, keep a copy of it outside the `starter` folder. To restart that file, paste the copy back.
 
 ## What the tests do
 
