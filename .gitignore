@@ -1,8 +1,26 @@
-# Build output from the test command
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+reports/
+
+# Node
+node_modules/
+
+# Java
 target/
-# Editor and operating-system files stay on your machine
+build/
+.gradle/
+*.class
+
+# Editor and OS files
 .idea/
-.vscode/
 *.iml
+.classpath
+.project
+.settings/
+.factorypath
 .DS_Store
 Thumbs.db

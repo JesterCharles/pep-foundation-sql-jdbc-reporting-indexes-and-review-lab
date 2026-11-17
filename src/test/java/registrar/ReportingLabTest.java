@@ -18,7 +18,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Public tests for the reporting lab. Every test starts from fresh tables holding the spring term
- * data (../fixtures/term-data.sql) in this run's own lab database on your local server.
+ * data (fixtures/term-data.sql) in this run's own lab database on your local server.
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class ReportingLabTest {
@@ -41,7 +41,7 @@ class ReportingLabTest {
     private static String sql(String task, String file) throws Exception {
         String text = LabDatabase.learnerSql(file);
         if (text == null) {
-            fail(task + ": " + file + " has no SQL yet. Write it below the TODO line (README.md, " + task + ").");
+            fail(task + ": " + file + " has no SQL yet. Write it below the TODO line (lab instructions, " + task + ").");
         }
         return text;
     }
@@ -55,7 +55,7 @@ class ReportingLabTest {
             return LabDatabase.rows(db, text);
         } catch (SQLException e) {
             String unfinished = String.valueOf(e.getMessage()).contains("syntax error at end of input")
-                    ? " The query stops too early: finish it below the supplied part (README.md, " + task + ")." : "";
+                    ? " The query stops too early: finish it below the supplied part (lab instructions, " + task + ")." : "";
             fail(task + ": " + file + " did not run. PostgreSQL said: " + e.getMessage() + unfinished);
             return null;
         }
@@ -76,7 +76,7 @@ class ReportingLabTest {
     @Test
     void task1Waitlist() throws Exception {
         LabDatabase.termData(db);
-        List<List<String>> actual = report("Task 1", "sql/waitlist.sql", List.of("id", "name", "sql101_grade"));
+        List<List<String>> actual = report("Task 1", "waitlist.sql", List.of("id", "name", "sql101_grade"));
         List<List<String>> expected = List.of(row("3", "Alan Turing", "88"), row("6", "Barbara Liskov", "88"));
         String hint = "";
         if (actual.stream().anyMatch(r -> r.get(0).equals("1"))) {
@@ -84,16 +84,16 @@ class ReportingLabTest {
         } else if (actual.stream().anyMatch(r -> r.get(0).equals("2") || r.get(0).equals("8"))) {
             hint = "Keep only students whose SQL101 grade is at least the SQL101 average (80.6): compare with a scalar subquery. ";
         }
-        assertEquals(expected, actual, "Task 1: sql/waitlist.sql returned the wrong rows or order. " + hint
+        assertEquals(expected, actual, "Task 1: waitlist.sql returned the wrong rows or order. " + hint
                 + "Expected " + expected + " but got " + actual + ".");
-        assertEquals("WITH", firstKeyword(sql("Task 1", "sql/waitlist.sql")), "Task 1 (static check of the file text): the rows "
+        assertEquals("WITH", firstKeyword(sql("Task 1", "waitlist.sql")), "Task 1 (static check of the file text): the rows "
                 + "are right; now write the query as a WITH query with named steps, as the task asks.");
     }
 
     @Test
     void task2TopStudents() throws Exception {
         LabDatabase.termData(db);
-        List<List<String>> actual = report("Task 2", "sql/top_students.sql",
+        List<List<String>> actual = report("Task 2", "top_students.sql",
                 List.of("course_code", "place", "name", "grade", "course_average"));
         List<List<String>> expected = List.of(
                 row("JDB301", "1", "Barbara Liskov", "90", "83.5"),
@@ -113,7 +113,7 @@ class ReportingLabTest {
         } else if (actual.size() == 2) {
             hint = "Only two rows in all: number the rows within each course with PARTITION BY course_code. ";
         }
-        assertEquals(expected, actual, "Task 2: sql/top_students.sql returned the wrong rows or order. " + hint
+        assertEquals(expected, actual, "Task 2: top_students.sql returned the wrong rows or order. " + hint
                 + "Expected " + expected + " but got " + actual + ".");
     }
 
@@ -122,12 +122,12 @@ class ReportingLabTest {
 
     @Test
     void task3ReportIndex() throws Exception {
-        String text = sql("Task 3", "sql/report_index.sql");
+        String text = sql("Task 3", "report_index.sql");
         LabDatabase.termData(db);
         try (Statement s = db.createStatement()) {
             s.execute(text);
         } catch (SQLException e) {
-            fail("Task 3: sql/report_index.sql did not run. PostgreSQL said: " + e.getMessage());
+            fail("Task 3: report_index.sql did not run. PostgreSQL said: " + e.getMessage());
         }
         List<List<String>> indexes = LabDatabase.rows(db,
                 "SELECT i.relname, string_agg(a.attname, ',' ORDER BY k.ord) "
