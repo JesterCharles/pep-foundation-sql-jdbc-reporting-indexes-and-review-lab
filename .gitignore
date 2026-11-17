@@ -14,13 +14,3 @@ target/
 build/
 .gradle/
 *.class
-
-# Editor and OS files
-.idea/
-*.iml
-.classpath
-.project
-.settings/
-.factorypath
-.DS_Store
-Thumbs.db
