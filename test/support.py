@@ -65,7 +65,7 @@ def learner_sql(task: str, name: str) -> str:
     """The learner's file src/<name>; fails the task while it holds only comments and blank lines."""
     content = (SRC / name).read_text(encoding="utf-8")
     if not any(line.strip() and not line.strip().startswith("--") for line in content.splitlines()):
-        pytest.fail(f"{task}: {name} has no SQL yet. Write it below the TODO line (lab instructions, {task}).", pytrace=False)
+        pytest.fail(f"{task}: {name} has no SQL yet. Write it below the TODO line (lab README, {task}).", pytrace=False)
     return content
 
 
@@ -105,7 +105,7 @@ def report(db, task: str, name: str, columns: list[str]) -> list[list[str]]:
     except psycopg.Error as error:
         problem = str(error).strip()
     if problem is not None:
-        unfinished = (f" The query stops too early: finish it below the supplied part (lab instructions, {task})."
+        unfinished = (f" The query stops too early: finish it below the supplied part (lab README, {task})."
                       if "syntax error at end of input" in problem else "")
         pytest.fail(f"{task}: {name} did not run. PostgreSQL said: {problem}{unfinished}", pytrace=False)
     actual = [column.name for column in cursor.description] if cursor.description else []
