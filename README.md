@@ -1,160 +1,120 @@
 # Reporting lab: the registrar's term reports
 
-The spring term is under way in the registrar database. The course coordinator needs a waitlist, a top-students report and a fast course dashboard. You finish three SQL files. The tests run each one against a fresh database on the PostgreSQL server the tests connect to.
+The spring term is under way in the registrar database. The course coordinator needs a waitlist, a top-students report and a fast course dashboard.
+You finish three SQL files. The tests run each one against a fresh PostgreSQL database.
 
-```
-OPEN the project -> EDIT a TODO -> RUN the tests -> READ the feedback -> STOP when all pass
-                        ^                                  |
-                        +------------ next task -----------+
-```
-
-In words: open the lab project, edit the TODO for one task, run the tests, read what the failing test tells you, and repeat with the next task. Stop when every test passes.
+You practise WITH queries with named steps, window functions and multicolumn indexes read through `EXPLAIN`.
 
 **Time:** about 20 minutes, at most 40 in one sitting. If you pass 40 minutes, note the next failing task and finish it later.
 
+You need no database server of your own: the tests start a private PostgreSQL 16 for each run and delete it afterwards.
+
 ## Quick start
 
-1. **Open** the lab project in VS Code, then open its terminal with **Terminal > New Terminal**. Go into the Maven project folder:
+1. Open the lab project. The files you edit are in `src/`; the checklist below names them.
+2. Select **Run Tests** before you change anything.
 
-   ```
-   cd starter
-   ```
-
-   Run every command in this README from this `starter` folder.
-2. **Run** the tests:
-
-   ```
-   mvn -q -o test
-   ```
-
-   **All 3 tests fail at first. That is expected:** each failure is a task you have not done yet.
-
-   If Maven instead says it cannot resolve a dependency, run `mvn -q dependency:go-offline` once (it needs the internet), then run the tests again.
-3. **Edit** the file for one task in [Your tasks](#your-tasks).
-4. **Read** the feedback: each failing test starts with its task number and names the next thing to fix. Run that task's test command again after each change.
-5. **Stop** when the full run `mvn -q -o test` prints no `[ERROR]` lines.
-
-The tests need a PostgreSQL server they can reach, JDK 25 and Maven 3.9 or later ([Prerequisites](#prerequisites)). If a command fails, see [Troubleshooting](#troubleshooting).
-
-## Your tasks
-
-You edit only the three files below, all in `starter/sql/`. Each one has a `TODO` comment that marks where your work goes. After each task, run its test; it is done when the run prints no `[ERROR]` lines. You can do the tasks in any order.
-
-- [ ] **1. SQL201 waitlist:** `sql/waitlist.sql`
-  `mvn -q -o test -Dtest='ReportingLabTest#task1Waitlist'`
-- [ ] **2. Top two per course:** `sql/top_students.sql`
-  `mvn -q -o test -Dtest='ReportingLabTest#task2TopStudents'`
-- [ ] **3. Dashboard index:** `sql/report_index.sql`
-  `mvn -q -o test -Dtest='ReportingLabTest#task3ReportIndex'`
-
-**Finish:** run all the tests with `mvn -q -o test`. You are done when it prints no `[ERROR]` lines and `target/surefire-reports/registrar.ReportingLabTest.txt` contains:
+   **All 3 visible tests fail at first. That is expected: each failure is a task you have not done yet.**
+   Every failure message starts with its task number, such as `Task 1:`.
+3. Work through the checklist below. After each task, select **Run Tests** again and read the remaining `Task N:` messages.
+4. **You are finished when all 3 visible tests pass.** Then select **Submit**.
+   Submitting also runs held-out tests you can't see. They check that each file does what its task asks in full, including how it is written where the task says so.
 
 ```
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+OPEN project -> RUN TESTS: 3 fail (expected)
+  -> READ the "Task N:" messages -> EDIT the next TODO -> RUN TESTS again
+  -> repeat for Tasks 1-3 -> SUBMIT when all 3 tests pass
 ```
 
-`WARNING:` lines from Java or Maven, such as `WARNING: A restricted method ...`, are not test failures.
+In words: open the project, run the tests, read which tasks fail, complete one task's TODO, run the tests again, and submit when they all pass.
+
+## Checklist
+
+You edit only the three files below, all in `src/`. Each one has a `TODO` comment that marks where your work goes. You can do the tasks in any order.
+
+- [ ] Task 1: SQL201 waitlist, `waitlist.sql` (test `test_task1_waitlist`)
+- [ ] Task 2: top two per course, `top_students.sql` (test `test_task2_top_students`)
+- [ ] Task 3: dashboard index, `report_index.sql` (test `test_task3_report_index`)
+
+A task is done when no failure message starts with its number.
+The tests and their data in `test/` are restored to their original state before your work is graded, so changes to them do not count.
+
+From a terminal in the project folder, you can run one task's test on its own, for example `python -m pytest -q -k task1`, or all of them with `python -m pytest -q`.
 
 ## The data
 
-`../fixtures/schema.sql` creates the registrar tables, and `../fixtures/term-data.sql` holds the spring term: 4 courses, 8 students and 12 enrollments, some still ungraded (NULL). Before every test, the tests rebuild the tables from these two files.
+`test/fixtures/schema.sql` creates the registrar tables, and `test/fixtures/term-data.sql` holds the spring term: 4 courses, 8 students and 12 enrollments, some still ungraded (NULL). Before every test, the tests rebuild the tables from these two files.
 
-**Try it in psql (optional, not tested).** From `starter`:
+**Try it by hand (optional, not tested).** In a terminal, from the project folder:
 
 ```
-psql -h localhost -d postgres -c "CREATE DATABASE reporting_scratch;"
-psql -h localhost -d reporting_scratch -f ../fixtures/schema.sql
-psql -h localhost -d reporting_scratch -f ../fixtures/term-data.sql
-psql -h localhost -d reporting_scratch
+python -m test.practice
 ```
 
-Try your queries at the prompt; `\d enrollments` lists the indexes PostgreSQL already made for the primary key, and `\q` leaves. When you finish, drop it with `psql -h localhost -d postgres -c "DROP DATABASE reporting_scratch;"`.
+It starts a private PostgreSQL with the spring term data and opens a `psql` prompt. Try your queries there; `\d enrollments` lists the indexes PostgreSQL already made for the primary key.
+`python -m test.practice src/waitlist.sql` runs your file once before the prompt opens.
+Leave with `\q`: the practice database is deleted, so the next start is fresh.
 
-## Task details
+## Task steps
 
-1. **SQL201 waitlist (`sql/waitlist.sql`).** Offer a SQL201 place to every student whose SQL101 grade is at least the SQL101 average grade and who is not already enrolled in SQL201.
-   - The file supplies the first named step, `sql101_average`, which computes the average.
-   - Add a second step, `sql201_students`, that lists who is already in SQL201, then the final `SELECT`.
-   - Columns `id`, `name`, `sql101_grade`, sorted by `sql101_grade` from highest to lowest, then `id`.
-   - The test also checks that the file's statement starts with `WITH`.
+### Task 1: SQL201 waitlist (`waitlist.sql`)
 
-   <details><summary>Hint</summary>
+Offer a SQL201 place to every student whose SQL101 grade is at least the SQL101 average grade and who is not already enrolled in SQL201.
+- The file supplies the first named step, `sql101_average`, which computes the average.
+- Add a second step, `sql201_students`, that lists who is already in SQL201, then the final `SELECT`.
+- Columns `id`, `name`, `sql101_grade`, sorted by `sql101_grade` from highest to lowest, then `id`.
+- Keep it one `WITH` query: the file's statement must start with `WITH`.
 
-   In the final `SELECT`, compare each grade with the average through a scalar subquery, and leave out the SQL201 students with `NOT IN` or `NOT EXISTS`.
+<details><summary>Hint</summary>
 
-   </details>
+In the final `SELECT`, compare each grade with the average through a scalar subquery, and leave out the SQL201 students with `NOT IN` or `NOT EXISTS`.
 
-2. **Top two per course (`sql/top_students.sql`).** For every course, the two best graded students. The file supplies a `WITH` step, `ranked`, that already selects each graded enrollment with its student's name.
-   - Where the TODO comment is, add a `place` column that numbers each course's rows by grade, highest first. Student id breaks ties, so Alan and Barbara, who both have 88 in SQL101, always come out in the same order.
-   - Add the course's average grade, `course_average`, on every row.
-   - Below the step, write the outer query that keeps places 1 and 2.
-   - Columns `course_code`, `place`, `name`, `grade`, `course_average`, sorted by `course_code`, then `place`.
+</details>
 
-   <details><summary>Hint</summary>
+### Task 2: top two per course (`top_students.sql`)
 
-   Number the rows with `ROW_NUMBER() OVER (PARTITION BY course_code ORDER BY grade DESC, student_id)`. Add the average with `AVG(grade) OVER (PARTITION BY course_code)`, which keeps each row instead of collapsing the group. With `RANK` or `DENSE_RANK` and no tie-breaker, tied students would share a place and a course could show three rows.
+For every course, the two best graded students. The file supplies a `WITH` step, `ranked`, that already selects each graded enrollment with its student's name.
+- Where the TODO comment is, add a `place` column that numbers each course's rows by grade, highest first. Student id breaks ties, so Alan and Barbara, who both have 88 in SQL101, always come out in the same order.
+- Add the course's average grade, `course_average`, on every row.
+- Below the step, write the outer query that keeps places 1 and 2.
+- Columns `course_code`, `place`, `name`, `grade`, `course_average`, sorted by `course_code`, then `place`.
 
-   </details>
+<details><summary>Hint</summary>
 
-3. **Dashboard index (`sql/report_index.sql`).** The dashboard runs `SELECT student_id, grade FROM enrollments WHERE course_code = ? ORDER BY grade DESC`. The primary key's index leads with `student_id`, so it cannot hand back one course's rows in grade order, and the plan still needs a Sort step.
-   - Write one `CREATE INDEX`, with a name of your choice, so the plan reads one course's rows in grade order.
-   - The test runs `EXPLAIN` on the dashboard query and checks that the plan reads the rows from your index in grade order, with no separate Sort step. It first turns sequential scans off (`SET enable_seqscan = off`), because on 12 rows PostgreSQL would rightly prefer reading the whole small table. If the test fails, it prints the plan: read which scan it chose.
+Number the rows with `ROW_NUMBER() OVER (PARTITION BY course_code ORDER BY grade DESC, student_id)`. Add the average with `AVG(grade) OVER (PARTITION BY course_code)`, which keeps each row instead of collapsing the group. With `RANK` or `DENSE_RANK` and no tie-breaker, tied students would share a place and a course could show three rows.
 
-   <details><summary>Hint</summary>
+</details>
 
-   Use a multicolumn B-tree index whose columns match the query: the filtered column first, then the sorted one. In your scratch database, `EXPLAIN` the same query before and after creating the index to see the change.
+### Task 3: dashboard index (`report_index.sql`)
 
-   </details>
+The dashboard runs `SELECT student_id, grade FROM enrollments WHERE course_code = ? ORDER BY grade DESC`. The primary key's index leads with `student_id`, so it cannot hand back one course's rows in grade order, and the plan still needs a Sort step.
+- Write one `CREATE INDEX`, with a name of your choice, so the plan reads one course's rows in grade order.
+- The tests check that your index has the right key columns, and that `EXPLAIN` on the dashboard query reads the rows from your index in grade order, with no separate Sort step. They first turn sequential scans off (`SET enable_seqscan = off`), because on 12 rows PostgreSQL would rightly prefer reading the whole small table.
 
-**Starting over (optional):** before you change a file, keep a copy of it outside the `starter` folder. To restart that file, paste the copy back.
+<details><summary>Hint</summary>
+
+Use a multicolumn B-tree index whose columns match the query: the filtered column first, then the sorted one. In the practice database, run `SET enable_seqscan = off;` and then `EXPLAIN` the same query before and after creating the index to see the change.
+
+</details>
+
+**Starting over (optional):** before you change a file, keep a copy of it outside the project folder. To restart that file, paste the copy back.
 
 ## What the tests do
 
-Each run creates its own database with a unique name such as `reporting_lab_3f9c0a1b7d2e`, runs the tests in it, and drops it. It never touches a database it did not create. While a run is in progress, the database's name is in `starter/target/lab-database.txt`. After setup, the tests run offline and talk only to that PostgreSQL server.
+The first test starts a private PostgreSQL 16 from the `pgserver` package in a temporary folder.
+Every test then gets its own new database with the spring term tables, runs your file in it, checks the result, and drops that database.
+At the end of the run the server and its folder are deleted. The tests never connect to any other database.
 
-## Prerequisites
+## Using an AI assistant
 
-| Tool | Version | Check |
-| --- | --- | --- |
-| PostgreSQL server and `psql` | 18 (16 or later works) | the connection check below |
-| JDK | 25 | `java -version` |
-| Apache Maven | 3.9 or later | `mvn -v` |
-
-### Connection check
-
-```
-psql -h localhost -p 5432 -d postgres -c "SELECT version();"
-```
-
-It should print one row starting `PostgreSQL 18` (or 16, 17) without asking for a password.
-
-## Setup
-
-The quick start is all the setup most learners need. Only if the connection check needs other values: the tests read the same environment variables as `psql`. Set the ones you need in the terminal where you run the tests; they last until you close it, so set them again in a new terminal.
-
-| Variable | Meaning | Default |
-| --- | --- | --- |
-| `PGHOST` | server host name | `localhost` |
-| `PGPORT` | server port | `5432` |
-| `PGUSER` | a PostgreSQL user allowed to create databases | your login name |
-| `PGDATABASE` | an existing database to connect to first | `postgres` |
-
-For example `export PGUSER=postgres` (macOS or Linux) or `$env:PGUSER = "postgres"` (Windows PowerShell).
-
-**If your server asks for a password**, put one line, `localhost:5432:*:postgres:your-password`, in `~/.pgpass` and run `chmod 600 ~/.pgpass` (macOS or Linux), or in `%APPDATA%\postgresql\pgpass.conf` (Windows). Never write a password into a lab file.
+If you use an AI assistant, ask it to explain, not to answer.
+"Explain what PARTITION BY does in a window function" teaches you SQL; "write my report" does not.
+Check any explanation with a test run before you trust it.
 
 ## Troubleshooting
 
 | What you see | What to do |
 | --- | --- |
-| `cd: no such file or directory: starter` (or `Cannot find path`) | The terminal is not in the lab's top folder, the one that holds this `README.md` and the `starter` folder. Change to that folder, then run `cd starter`. |
-| `Could not reach PostgreSQL to create the lab database` | Run the [connection check](#connection-check) until it prints the version. |
-| `password authentication failed` or `no password was provided` | Set up a [password file](#setup), or set `PGUSER`. |
-| `permission denied to create database` | Use a PostgreSQL user that may create databases, such as `postgres`. |
-| `No suitable driver found` | Run the test command from `starter`; the PostgreSQL driver comes from `pom.xml`. |
-| Maven cannot resolve a dependency offline | Run `mvn -q dependency:go-offline` once with the internet on. |
-| A run was interrupted | Drop the database named in `starter/target/lab-database.txt`, for example `psql -h localhost -d postgres -c "DROP DATABASE reporting_lab_3f9c0a1b7d2e WITH (FORCE);"` with the name from the file. |
-
-## Tested with
-
-PostgreSQL 18.3, JDK 25 and Maven 3.9.9 on macOS (arm64), with no-password local connections. Linux and Windows runs have not been recorded yet; the steps follow PostgreSQL's and pgJDBC's documented behaviour there.
+| `pgserver package, which is not installed` | Run `python -m pip install -r requirements.txt`. `pgserver` needs Python 3.9 to 3.12; **Run Tests** uses a supported Python. |
+| `syntax error at end of input` | The query stops too early: finish it below the supplied part. |
+| `must return the columns ... in that order` | Name each column with `AS` exactly as the task lists it, in that order. |

@@ -1,5 +1,5 @@
 -- Spring term data for the reporting lab. Supplied: do not edit.
--- The tests load it into a fresh copy of fixtures/schema.sql before every task.
+-- The tests load it into a fresh copy of test/fixtures/schema.sql before every task.
 INSERT INTO courses (code, title, capacity, prerequisite_code) VALUES
   ('SQL101', 'SQL Foundations', 6, NULL),
   ('PGA110', 'PostgreSQL Admin Basics', 2, NULL),
